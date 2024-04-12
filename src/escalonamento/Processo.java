@@ -1,9 +1,6 @@
 package escalonamento;
 
-/**
- *
- * @author Patricia Durand e Tamires Domingues
- */
+
 public class Processo {
 
     private int numeroDoProcesso;
