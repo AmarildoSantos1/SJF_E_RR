@@ -10,154 +10,102 @@ public class Escalonamento {
 
         ArrayList<String> dadosDoArquivo = a.pegaDadosDoArquivo();
 
-        //manipula os dados para passar para o gerenciador de processos
+        // Manipula os dados para passar para o gerenciador de processos
         int quantidadeProcessos = Integer.parseInt(dadosDoArquivo.get(0));
         int tamanhoDaFatiaDeTempo = Integer.parseInt(dadosDoArquivo.get(1));
 
-        //passa os dados manipulados para o gerenciador de processos
-        GerenciadorDeProcessos gerenciadorDeProcessos;
-        gerenciadorDeProcessos = new GerenciadorDeProcessos(quantidadeProcessos, tamanhoDaFatiaDeTempo, dadosDoArquivo);
+        // Passa os dados manipulados para o gerenciador de processos
+        GerenciadorDeProcessos gerenciadorDeProcessos = new GerenciadorDeProcessos(quantidadeProcessos, tamanhoDaFatiaDeTempo, dadosDoArquivo);
         gerenciadorDeProcessos.adicionaProcessos();
 
         ArrayList<Processo> listaDeProcessos = gerenciadorDeProcessos.getListaDeProcessos();
 
-        //Execução do SJF
+        // Execução dos processos
+        for (int i = 0; i < listaDeProcessos.size(); i++) {
+            Processo processo = listaDeProcessos.get(i);
+            int core = i % Runtime.getRuntime().availableProcessors(); // Atribui core com base nos processadores disponíveis
+
+            processo.setCore(core);
+            System.out.println("O Processo " + processo.getNumeroDoProcesso() + " está no Core " + core + " do processador");
+
+            // Execute o processo neste core
+            // ...
+        }
+
+        // Execução do algoritmo SJF
+        executarAlgoritmoSJF(listaDeProcessos);
+
+        // Execução do Round Robin
+        executarAlgoritmoRoundRobin(listaDeProcessos, tamanhoDaFatiaDeTempo);
+
+        // Execução do Round Robin com preempção
+        executarAlgoritmoRoundRobinComPreempcao(listaDeProcessos, tamanhoDaFatiaDeTempo);
+    }
+
+    private static void executarAlgoritmoSJF(ArrayList<Processo> listaDeProcessos) {
+        GerenciadorDeProcessos gerenciadorDeProcessos = new GerenciadorDeProcessos(listaDeProcessos.size(), 1, null); // Use um tamanho de fatia de tempo mínimo para o SJF
         gerenciadorDeProcessos.atualizaOTempoQueFaltaExecutar();
         SJF sjf = new SJF(listaDeProcessos);
 
         ArrayList<String> graficoDeSaidaSJF = sjf.getGraficoDeSaida();
-        double acumuladorTempoDeEspera;
-        double acumuladorTempoDeResposta;
-        double acumuladorTempoDeTurnaround;
-
-        System.out.println("Gráfico de saída: SJF");
-        for (int i = 0; i < graficoDeSaidaSJF.size(); i++) {
-            System.out.print(graficoDeSaidaSJF.get(i));
-        }
-
-        System.out.println("");
-
-        acumuladorTempoDeEspera = 0;
-        acumuladorTempoDeResposta = 0;
-        acumuladorTempoDeTurnaround = 0;
-
         Calculadora calculadoraSJF = new Calculadora(listaDeProcessos, graficoDeSaidaSJF);
-        for (int i = 0; i < listaDeProcessos.size(); i++) {
-            System.out.println("Calculo para o processo " + listaDeProcessos.get(i).getNumeroDoProcesso());
-            calculadoraSJF.calculaTemposDoProcesso(listaDeProcessos.get(i));
 
-            System.out.print("Tempo de Espera: ");
-            System.out.println(calculadoraSJF.getTempoDeEspera());
-            acumuladorTempoDeEspera += calculadoraSJF.getTempoDeEspera();
+        imprimirResultados("SJF", listaDeProcessos, calculadoraSJF);
+    }
 
-            System.out.print("Tempo de Resposta: ");
-            System.out.println(calculadoraSJF.getTempoDeResposta());
-            acumuladorTempoDeResposta += calculadoraSJF.getTempoDeResposta();
-
-            System.out.print("Tempo de Turnaround: ");
-            System.out.println(calculadoraSJF.getTempoDeTurnaround());
-            acumuladorTempoDeTurnaround += calculadoraSJF.getTempoDeTurnaround();
-            System.out.println("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-");
-        }
-
-        System.out.print("Tempo médio de Espera: ");
-        System.out.println(acumuladorTempoDeEspera / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Resposta: ");
-        System.out.println(acumuladorTempoDeResposta / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Turnaroud: ");
-        System.out.println(acumuladorTempoDeTurnaround / quantidadeProcessos);
-
-        //Execução do Round Robin
+    private static void executarAlgoritmoRoundRobin(ArrayList<Processo> listaDeProcessos, int tamanhoDaFatiaDeTempo) {
+        GerenciadorDeProcessos gerenciadorDeProcessos = new GerenciadorDeProcessos(listaDeProcessos.size(), tamanhoDaFatiaDeTempo, null);
         gerenciadorDeProcessos.atualizaOTempoQueFaltaExecutar();
         RoundRobin roundrobin = new RoundRobin(listaDeProcessos, tamanhoDaFatiaDeTempo);
 
         ArrayList<String> graficoDeSaidaRoundRobin = roundrobin.getGraficoDeSaida();
-
-        System.out.println("Gráfico de saída: RoundRobin");
-        for (int i = 0; i < graficoDeSaidaRoundRobin.size(); i++) {
-            System.out.print(graficoDeSaidaRoundRobin.get(i));
-        }
-
-        System.out.println("");
-
-        acumuladorTempoDeEspera = 0;
-        acumuladorTempoDeResposta = 0;
-        acumuladorTempoDeTurnaround = 0;
-
         Calculadora calculadoraRoundRobin = new Calculadora(listaDeProcessos, graficoDeSaidaRoundRobin);
-        for (int i = 0; i < listaDeProcessos.size(); i++) {
-            System.out.println("Calculo para o processo " + listaDeProcessos.get(i).getNumeroDoProcesso());
-            calculadoraRoundRobin.calculaTemposDoProcesso(listaDeProcessos.get(i));
 
-            System.out.print("Tempo de Espera: ");
-            System.out.println(calculadoraRoundRobin.getTempoDeEspera());
-            acumuladorTempoDeEspera += calculadoraRoundRobin.getTempoDeEspera();
+        imprimirResultados("RoundRobin", listaDeProcessos, calculadoraRoundRobin);
+    }
 
-            System.out.print("Tempo de Resposta: ");
-            System.out.println(calculadoraRoundRobin.getTempoDeResposta());
-            acumuladorTempoDeResposta += calculadoraRoundRobin.getTempoDeResposta();
-
-            System.out.print("Tempo de Turnaround: ");
-            System.out.println(calculadoraRoundRobin.getTempoDeTurnaround());
-            acumuladorTempoDeTurnaround += calculadoraRoundRobin.getTempoDeTurnaround();
-            System.out.println("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-");
-        }
-
-        System.out.print("Tempo médio de Espera: ");
-        System.out.println(acumuladorTempoDeEspera / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Resposta: ");
-        System.out.println(acumuladorTempoDeResposta / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Turnaroud: ");
-        System.out.println(acumuladorTempoDeTurnaround / quantidadeProcessos);
-
-        //Execução do Round Robin com preempção
+    private static void executarAlgoritmoRoundRobinComPreempcao(ArrayList<Processo> listaDeProcessos, int tamanhoDaFatiaDeTempo) {
+        GerenciadorDeProcessos gerenciadorDeProcessos = new GerenciadorDeProcessos(listaDeProcessos.size(), tamanhoDaFatiaDeTempo, null);
         gerenciadorDeProcessos.atualizaOTempoQueFaltaExecutar();
         RoundRobinComPreempcao roundRobinComPreempcao = new RoundRobinComPreempcao(listaDeProcessos, tamanhoDaFatiaDeTempo);
 
         ArrayList<String> graficoDeSaidaRoundRobinComPreempcao = roundRobinComPreempcao.getGraficoDeSaida();
+        Calculadora calculadoraRoundRobinComPreempcao = new Calculadora(listaDeProcessos, graficoDeSaidaRoundRobinComPreempcao);
 
-        System.out.println("Gráfico de saída: RoundRobin com Preempção");
-        for (int i = 0; i < graficoDeSaidaRoundRobinComPreempcao.size(); i++) {
-            System.out.print(graficoDeSaidaRoundRobinComPreempcao.get(i));
+        imprimirResultados("RoundRobin com Preempção", listaDeProcessos, calculadoraRoundRobinComPreempcao);
+    }
+
+    private static void imprimirResultados(String algoritmo, ArrayList<Processo> listaDeProcessos, Calculadora calculadora) {
+        System.out.println("Gráfico de saída: " + algoritmo);
+        for (String linha : calculadora.getGraficoDeSaida()) {
+            System.out.print(linha);
         }
 
-        System.out.println("");
+        System.out.println();
 
-        acumuladorTempoDeEspera = 0;
-        acumuladorTempoDeResposta = 0;
-        acumuladorTempoDeTurnaround = 0;
+        double acumuladorTempoDeEspera = 0;
+        double acumuladorTempoDeResposta = 0;
+        double acumuladorTempoDeTurnaround = 0;
 
-        Calculadora calculadoraRoundRobinComPreempcao = new Calculadora(listaDeProcessos, graficoDeSaidaRoundRobinComPreempcao);
-        for (int i = 0; i < listaDeProcessos.size(); i++) {
-            System.out.println("Calculo para o processo " + listaDeProcessos.get(i).getNumeroDoProcesso());
-            calculadoraRoundRobinComPreempcao.calculaTemposDoProcesso(listaDeProcessos.get(i));
+        for (Processo processo : listaDeProcessos) {
+            System.out.println("Cálculo para o processo " + processo.getNumeroDoProcesso());
+            calculadora.calculaTemposDoProcesso(processo);
 
-            System.out.print("Tempo de Espera: ");
-            System.out.println(calculadoraRoundRobinComPreempcao.getTempoDeEspera());
-            acumuladorTempoDeEspera += calculadoraRoundRobinComPreempcao.getTempoDeEspera();
+            System.out.println("Tempo de Espera: " + calculadora.getTempoDeEspera());
+            acumuladorTempoDeEspera += calculadora.getTempoDeEspera();
 
-            System.out.print("Tempo de Resposta: ");
-            System.out.println(calculadoraRoundRobinComPreempcao.getTempoDeResposta());
-            acumuladorTempoDeResposta += calculadoraRoundRobinComPreempcao.getTempoDeResposta();
+            System.out.println("Tempo de Resposta: " + calculadora.getTempoDeResposta());
+            acumuladorTempoDeResposta += calculadora.getTempoDeResposta();
 
-            System.out.print("Tempo de Turnaround: ");
-            System.out.println(calculadoraRoundRobinComPreempcao.getTempoDeTurnaround());
-            acumuladorTempoDeTurnaround += calculadoraRoundRobinComPreempcao.getTempoDeTurnaround();
+            System.out.println("Tempo de Turnaround: " + calculadora.getTempoDeTurnaround());
+            acumuladorTempoDeTurnaround += calculadora.getTempoDeTurnaround();
+
             System.out.println("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-");
         }
 
-        System.out.print("Tempo médio de Espera: ");
-        System.out.println(acumuladorTempoDeEspera / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Resposta: ");
-        System.out.println(acumuladorTempoDeResposta / quantidadeProcessos);
-
-        System.out.print("Tempo médio de Turnaroud: ");
-        System.out.println(acumuladorTempoDeTurnaround / quantidadeProcessos);
-
+        int quantidadeProcessos = listaDeProcessos.size();
+        System.out.println("Tempo médio de Espera: " + (acumuladorTempoDeEspera / quantidadeProcessos));
+        System.out.println("Tempo médio de Resposta: " + (acumuladorTempoDeResposta / quantidadeProcessos));
+        System.out.println("Tempo médio de Turnaround: " + (acumuladorTempoDeTurnaround / quantidadeProcessos));
     }
 }
