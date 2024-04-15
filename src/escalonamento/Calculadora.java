@@ -6,16 +6,16 @@ public class Calculadora {
 
     private ArrayList<Processo> listaDeProcessos;
     private ArrayList<String> graficoDeSaida;
-    private int tempoDeEspera;
-    private int tempoDeResposta;
-    private int tempoDeTurnaround;
+    private double tempoDeEspera;
+    private double tempoDeResposta;
+    private double tempoDeTurnaround;
 
     public Calculadora(ArrayList<Processo> listaDeProcessos, ArrayList<String> graficoDeSaida) {
         this.listaDeProcessos = listaDeProcessos;
         this.graficoDeSaida = graficoDeSaida;
-        tempoDeEspera = 0;
-        tempoDeResposta = 0;
-        tempoDeTurnaround = 0;
+        this.tempoDeEspera = 0;
+        this.tempoDeResposta = 0;
+        this.tempoDeTurnaround = 0;
     }
 
     public void calculaTemposDoProcesso(Processo processo) {
@@ -24,15 +24,15 @@ public class Calculadora {
         int numeroDoProcesso = processo.getNumeroDoProcesso();
 
         int tempoTerminoDoProcesso = pegaOTempoDeTerminoDoProcesso(numeroDoProcesso);
-        int tempoInicioDoProcesso = pegaOTempoDeInicioDoProcesso(numeroDoProcesso);;
+        int tempoInicioDoProcesso = pegaOTempoDeInicioDoProcesso(numeroDoProcesso);
 
-        tempoDeEspera = tempoTerminoDoProcesso - tempoDeChegada - tempoDeExecucao;
-        tempoDeResposta = tempoInicioDoProcesso - tempoDeChegada;
-        tempoDeTurnaround = tempoTerminoDoProcesso - tempoDeChegada;
+        this.tempoDeEspera = tempoTerminoDoProcesso - tempoDeChegada - tempoDeExecucao;
+        this.tempoDeResposta = tempoInicioDoProcesso - tempoDeChegada;
+        this.tempoDeTurnaround = tempoTerminoDoProcesso - tempoDeChegada;
     }
 
     private int pegaOTempoDeTerminoDoProcesso(int numeroDoProcesso) {
-        for (int i = graficoDeSaida.size() - 1; i > 0; i--) {
+        for (int i = graficoDeSaida.size() - 1; i >= 0; i--) {
             if (graficoDeSaida.get(i).equals("" + numeroDoProcesso)) {
                 return i + 1;
             }
@@ -49,15 +49,19 @@ public class Calculadora {
         return -1;
     }
 
-    public int getTempoDeEspera() {
-        return tempoDeEspera;
+    public double getTempoDeEspera() {
+        return this.tempoDeEspera;
     }
 
-    public int getTempoDeResposta() {
-        return tempoDeResposta;
+    public double getTempoDeResposta() {
+        return this.tempoDeResposta;
     }
 
-    public int getTempoDeTurnaround() {
-        return tempoDeTurnaround;
+    public double getTempoDeTurnaround() {
+        return this.tempoDeTurnaround;
+    }
+
+    public ArrayList<String> getGraficoDeSaida() {
+        return this.graficoDeSaida;
     }
 }
